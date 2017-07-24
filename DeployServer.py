@@ -1,6 +1,7 @@
 """
-CodeX.Deploy
+DeployServer
 Autodeploy your project when git branch was updated.
+
 
 Repository: https://github.com/codex-team/deploy
 Report bug: https://github.com/codex-team/deploy/issues
@@ -68,7 +69,7 @@ class DeployServer(object):
             print('Cannot create webhook url. Check \'server_address\' param.')
             exit()
 
-        message = 'CodeX.Deploy is ready to get requests from Github.\n' \
+        message = 'DeployServer is ready to get requests from Github.\n' \
                   '\n' \
                   'Please set up a new webhook in project settings with following params:\n' \
                   '- Payload URL: ' + URL + '\n' \

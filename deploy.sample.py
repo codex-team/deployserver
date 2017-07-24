@@ -7,7 +7,7 @@ $ python3 myProject_autodeploy.py
 To run script with Screen silently:
 $ screen -dmS myProject_autodeploy python3 myProject_autodeploy.py
 
-CodeX.Deploy repo: https://github.com/codex-team/deploy
+DeployServer repo: https://github.com/codex-team/deploy
 Screen docs: https://www.gnu.org/software/screen/manual/screen.html
 """
 
