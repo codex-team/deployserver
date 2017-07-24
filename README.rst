@@ -5,18 +5,22 @@ Deploy your project automatically when git branch was updated.
 
 Usage
 -----
+Install deployserver from pip.
+
+.. code:: bash
+
+    $ pip3 install deployserver
+
 
 To start your first autodeploy daemon you need to create python script
 file for your project.
 
 .. code:: python
 
-    # Import DeployServer class
-    from DeployServer import DeployServer
+    import deployserver
 
 
-    # Init DeployServer with params
-    DeployServer({
+    deployserver.init({
         'server_address': 'http://mydomain.com',
         'port': 1234,
         'deploy': 'cd /var/www/myProject; git pull;'
@@ -112,23 +116,13 @@ Callback uri.
 
     'uri': '/'
 
-Dependences
------------
-
-Make sure that you have installed following packages. \* aiohttp \*
-asyncio
-
-You can install all package dependences by entering this command:
-
-.. code:: bash
-
-    $ pip3 install -r requirements.txt
-
 Links
 -----
 
 Repository: https://github.com/codex-team/deployserver
 
 Report a bug: https://github.com/codex-team/deployserver/issues
+
+PyPI Package: https://pypi.python.org/pypi/deployserver
 
 CodeX Team: https://ifmo.su
