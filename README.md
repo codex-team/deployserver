@@ -1,7 +1,7 @@
 # DeployServer
 Deploy your project automatically when git branch was updated.
 
-# Usage
+## Usage
 To start your first autodeploy daemon you need to create python script file for your project.
 
 ```python
@@ -27,7 +27,7 @@ $ screen -dmS DeployServer_myProject python3 deploy.py
 ```
 Screen docs: https://www.gnu.org/software/screen/manual/screen.html
 
-# Initial params
+## Initial params
 For initiation DeployServer params dict is required.
 
 
@@ -81,7 +81,7 @@ Callback uri.
 'uri': '/'
 ```
 
-# Dependences
+## Dependences
 Make sure that you have installed following packages.
 * aiohttp
 * asyncio
@@ -91,7 +91,7 @@ You can install all package dependences by entering this command:
 $ pip3 install -r requirements.txt
 ```
 
-# Links
+## Links
 
 Repository: https://github.com/codex-team/deployserver
 
