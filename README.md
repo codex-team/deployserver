@@ -81,6 +81,16 @@ Callback uri.
 'uri': '/'
 ```
 
+# Dependences
+Make sure that you have installed following packages.
+* aiohttp
+* asyncio
+
+You can install all package dependences by entering this command:
+```bash
+$ pip3 install -r requirements.txt
+```
+
 # Links
 
 Repository: https://github.com/codex-team/deployserver
