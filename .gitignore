@@ -1,10 +1,9 @@
-# Ignore everything
-*
-
-# But not these files
-!.gitignore
-!deploy.sample.py
-!DeployServer.py
-!LICENSE
-!README.md
-!requirements.txt
+# general things to ignore
+build/
+dist/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
