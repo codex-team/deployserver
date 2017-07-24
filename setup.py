@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='deployserver',
-    version='0.1.5',
+    version='0.1.6',
     packages = find_packages(),
     description='Deploy your project automatically when git branch was updated.',
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
@@ -19,5 +19,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Environment :: Console'
     ],
-    install_requires=['aiohttp', 'asyncio']
+    install_requires=['aiohttp', 'asyncio'],
+    python_requires='>=3.5'
 )
