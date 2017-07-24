@@ -3,7 +3,7 @@ from os.path import join, dirname
 
 setup(
     name='deployserver',
-    version='0.1.4',
+    version='0.1.5',
     packages = find_packages(),
     description='Deploy your project automatically when git branch was updated.',
     long_description=open(join(dirname(__file__), 'README.rst')).read(),

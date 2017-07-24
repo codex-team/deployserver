@@ -76,7 +76,7 @@ def init(settings):
             if params['server_address'][-8:] != 'ngrok.io':
                 URL = '{}:{}{}'.format(params['server_address'], params['port'], params['uri'])
             else:
-                URL = '{}{}'.format(params['server_address'], params['port'], params['uri'])
+                URL = '{}{}'.format(params['server_address'], params['uri'])
         except:
             print('Cannot create webhook url. Check \'server_address\' param.')
             exit()
