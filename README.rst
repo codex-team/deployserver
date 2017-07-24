@@ -1,4 +1,4 @@
-DeployServer
+deployserver
 ============
 
 Deploy your project automatically when git branch was updated.
