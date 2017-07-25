@@ -22,7 +22,8 @@ To start your first autodeploy daemon you need to create `deploy.py` script file
     deployserver.init({
         'server_address': 'http://mydomain.com',
         'port': 1234,
-        'deploy': 'cd /var/www/myProject; git pull;'
+        'deploy': 'cd /var/www/myProject;' \
+                  'git pull;'
     })
 
 Then you need to run this script.
@@ -77,7 +78,8 @@ Bash commands sequence which should be initiated on branch update.
 
 .. code:: python
 
-    'deploy': 'cd /var/www/myProject; git pull;'
+    'deploy': 'cd /var/www/myProject;' \
+              'git pull;'
 
 .. code:: python
 
