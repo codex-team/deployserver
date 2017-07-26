@@ -114,10 +114,11 @@ def init(settings):
             if event == "push":
                 ref = data.get("ref", "")
 
-                if params['branch']:
-                    os.system(params['deploy'])
+                print('Got a {} event in {} branch.'.format(event, ref))
 
-                print('Got a {} event in {} branch.'.format(event, data.get("ref")))
+                if params['branch'] == ref:
+                    print('Run deploy script...')
+                    os.system(params['deploy'])
 
         except Exception as e:
             print("[github callback] Message process error: [%s]" % e)
