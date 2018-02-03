@@ -1,7 +1,7 @@
 deployserver
 ============
 
-Deploy your project automatically when git branch was updated.
+Deploy your project automatically when git branch was updated via GitHub webhooks.
 
 Usage
 -----
@@ -116,6 +116,21 @@ Callback uri.
 .. code:: python
 
     'uri': '/'
+
+(optional) secret_token : string
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Secret token. Check if it is set.
+
+.. code:: python
+
+    # default
+    'secret_token': None
+
+.. code:: python
+
+    'secret_token': 'a96529a4af7864e7f6e11035d10b7db5'
+
 
 Requirements
 ------------
