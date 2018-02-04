@@ -20,10 +20,12 @@ Links
 Repository: https://github.com/codex-team/deploy
 Report bug: https://github.com/codex-team/deploy/issues
 """
-
-from aiohttp import web
 import asyncio
 import os
+import hashlib
+import hmac
+
+from aiohttp import web
 
 
 def init(settings):
@@ -57,6 +59,11 @@ def init(settings):
         (optional) Callback uri.
         default: '/callback'
         example: '/'
+
+    params['secret_token'] : string
+        (optional) Secret token.
+        default: None
+        example: 'a96529a4af7864e7f6e11035d10b7db5'
     """
 
     params = {
@@ -65,6 +72,7 @@ def init(settings):
         'deploy': settings.get('deploy', ''),
         'uri': settings.get('uri', '/callback'),
         'branch': 'refs/heads/' + settings.get('branch', 'master'),
+        'secret_token': settings.get('secret_token', None)
     }
 
     def show_welcome_message():
@@ -86,6 +94,7 @@ def init(settings):
                   'Please set up a new webhook in project settings with following params:\n' \
                   '- Payload URL: ' + URL + '\n' \
                   '- Content type: application/json \n' \
+                  + ('- Secret: ' + params['secret_token'] + '\n' if params['secret_token'] else '') + \
                   '- Which events would you like to trigger this webhook?\n'\
                   '  [x] Just the push event.\n' \
                   '\n' \
@@ -102,6 +111,15 @@ def init(settings):
         app.router.add_post('/callback', github_callback)
         web.run_app(app, port=params['port'])
 
+    def verify_callback(signature, body):
+        if not params['secret_token']:
+            return True
+
+        if not signature.startswith("sha1="):
+            return False
+
+        return signature[5:] == hmac.new(params['secret_token'].encode(), body, hashlib.sha1).hexdigest()
+
     async def github_callback(request):
         """
         Web App function for processing callback
@@ -110,6 +128,14 @@ def init(settings):
             data = await request.json()
             headers = request.headers
             event = headers.get("X-GitHub-Event", "")
+            signature = headers.get("X-Hub-Signature", "")
+
+            # Verify signature if it is set in configuration
+            if params['secret_token']:
+                body = await request.read()
+                if not verify_callback(signature, body):
+                    print('Signature verification failed...')
+                    return web.Response(status=web.HTTPUnauthorized.status_code)
 
             if event == "push":
                 ref = data.get("ref", "")
