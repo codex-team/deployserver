@@ -8,4 +8,5 @@ venv/
 *.py[cod]
 __pycache__/
 *.so
+main.py
 *~
