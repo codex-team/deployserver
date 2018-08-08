@@ -1,7 +1,7 @@
 deployserver
 ============
 
-Deploy your project automatically when git branch was updated via GitHub webhooks.
+Deploy your project automatically when git branch was updated via GitHub or BitBucket webhooks.
 
 Usage
 -----

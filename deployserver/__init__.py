@@ -91,12 +91,19 @@ def init(settings):
 
         message = 'DeployServer is ready to get requests from Github.\n' \
                   '\n' \
-                  'Please set up a new webhook in project settings with following params:\n' \
+                  'Please set up a new webhook in project settings with following params:\n\n' \
+                  'GitHub:\n' \
                   '- Payload URL: ' + URL + '\n' \
                   '- Content type: application/json \n' \
                   + ('- Secret: ' + params['secret_token'] + '\n' if params['secret_token'] else '') + \
                   '- Which events would you like to trigger this webhook?\n'\
                   '  [x] Just the push event.\n' \
+                  '\n' \
+                  'BitBucket:\n' \
+                  '- URL: ' + URL + '\n' \
+                  '- Triggers (Choose from a full list of triggers):\n' \
+                  '  [x] Repository - Push\n' \
+                  '  [x] Pull Request - Merged\n' \
                   '\n' \
                   'Web Application logs:'
 
@@ -108,46 +115,92 @@ def init(settings):
         """
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
-        app.router.add_post('/callback', github_callback)
+        app.router.add_post(params['uri'], callback)
         web.run_app(app, port=params['port'])
 
-    def verify_callback(signature, body):
-        if not params['secret_token']:
-            return True
+    async def process_gh_request(request):
+        def verify_callback(signature, body):
+            if not params['secret_token']:
+                return True
 
-        if not signature.startswith("sha1="):
-            return False
+            if not signature.startswith("sha1="):
+                return False
 
-        return signature[5:] == hmac.new(params['secret_token'].encode(), body, hashlib.sha1).hexdigest()
+            return signature[5:] == hmac.new(params['secret_token'].encode(), body, hashlib.sha1).hexdigest()
 
-    async def github_callback(request):
+        data = await request.json()
+        headers = request.headers
+        event = headers.get("X-GitHub-Event", "")
+        signature = headers.get("X-Hub-Signature", "")
+
+        # Verify signature if it is set in configuration
+        if params['secret_token']:
+            body = await request.read()
+
+            if not verify_callback(signature, body):
+                print('Signature verification failed...')
+                return web.Response(status=web.HTTPUnauthorized.status_code)
+
+        if event == "push":
+            ref = data.get("ref", "")
+
+            print('Got a {} event in {} branch.'.format(event, ref))
+
+            if params['branch'] == ref:
+                print('Run deploy script...')
+                os.system(params['deploy'])
+
+    async def process_bb_request(request):
+        data = await request.json()
+        headers = request.headers
+        event = headers.get('X-Event-Key', '')
+
+        can_deploy = False
+
+        if event == 'repo:push':
+            changes = data.get('push').get('changes', [{}])
+            new_changes = changes[0].get('new', {})
+            push_type = new_changes.get('type', None)
+
+            if push_type is None or push_type != 'branch':
+                return
+
+            branch = new_changes.get('name', '')
+
+            print('Got a {} event in {} branch.'.format(event, branch))
+
+            if params['branch'].split('/')[-1] == branch:
+                can_deploy = True
+
+        elif event == 'pullrequest:fulfilled':
+            pullrequest = data.get('pullrequest')
+            branch = pullrequest.get('destination').get('branch', {}).get('name', '')
+
+            print('Got a {} event into {} branch.'.format(event, branch))
+
+            if params['branch'].split('/')[-1] == branch:
+                can_deploy = True
+
+        if can_deploy:
+            print('Run deploy script...')
+            os.system(params['deploy'])
+
+
+    async def callback(request):
         """
         Web App function for processing callback
         """
         try:
-            data = await request.json()
-            headers = request.headers
-            event = headers.get("X-GitHub-Event", "")
-            signature = headers.get("X-Hub-Signature", "")
+            user_agent = request.headers.get('User-Agent', '')
 
-            # Verify signature if it is set in configuration
-            if params['secret_token']:
-                body = await request.read()
-                if not verify_callback(signature, body):
-                    print('Signature verification failed...')
-                    return web.Response(status=web.HTTPUnauthorized.status_code)
+            if user_agent.startswith('Bitbucket-Webhooks'):
+                await process_bb_request(request)
+            elif user_agent.startswith('GitHub-Hookshot'):
+                await process_gh_request(request)
 
-            if event == "push":
-                ref = data.get("ref", "")
-
-                print('Got a {} event in {} branch.'.format(event, ref))
-
-                if params['branch'] == ref:
-                    print('Run deploy script...')
-                    os.system(params['deploy'])
 
         except Exception as e:
-            print("[github callback] Message process error: [%s]" % e)
+            print("[callback] Message process error: [%s]" % e)
 
         return web.Response(text='OK')
 
