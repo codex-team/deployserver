@@ -118,16 +118,16 @@ def init(settings):
         app.router.add_post(params['uri'], callback)
         web.run_app(app, port=params['port'])
 
-    def verify_callback(signature, body):
-        if not params['secret_token']:
-            return True
-
-        if not signature.startswith("sha1="):
-            return False
-
-        return signature[5:] == hmac.new(params['secret_token'].encode(), body, hashlib.sha1).hexdigest()
-
     async def process_gh_request(request):
+        def verify_callback(signature, body):
+            if not params['secret_token']:
+                return True
+
+            if not signature.startswith("sha1="):
+                return False
+
+            return signature[5:] == hmac.new(params['secret_token'].encode(), body, hashlib.sha1).hexdigest()
+
         data = await request.json()
         headers = request.headers
         event = headers.get("X-GitHub-Event", "")
@@ -160,9 +160,9 @@ def init(settings):
         if event == 'repo:push':
             changes = data.get('push').get('changes', [{}])
             new_changes = changes[0].get('new', {})
-            type = new_changes.get('type', None)
+            push_type = new_changes.get('type', None)
 
-            if type is None or type != 'branch':
+            if push_type is None or push_type != 'branch':
                 return
 
             branch = new_changes.get('name', '')
