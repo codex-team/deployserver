@@ -184,9 +184,11 @@ def init(settings):
         Web App function for processing callback
         """
         try:
-            if request.headers.get('User-Agent', '').startswith('Bitbucket-Webhooks'):
+            user_agent = request.headers.get('User-Agent', '')
+
+            if user_agent.startswith('Bitbucket-Webhooks'):
                 await process_bb_request(request)
-            elif request.headers.get('User-Agent').startswith('GitHub-Hookshot'):
+            elif user_agent.startswith('GitHub-Hookshot'):
                 await process_gh_request(request)
 
 
