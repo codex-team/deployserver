@@ -91,12 +91,19 @@ def init(settings):
 
         message = 'DeployServer is ready to get requests from Github.\n' \
                   '\n' \
-                  'Please set up a new webhook in project settings with following params:\n' \
+                  'Please set up a new webhook in project settings with following params:\n\n' \
+                  'GitHub:\n' \
                   '- Payload URL: ' + URL + '\n' \
                   '- Content type: application/json \n' \
                   + ('- Secret: ' + params['secret_token'] + '\n' if params['secret_token'] else '') + \
                   '- Which events would you like to trigger this webhook?\n'\
                   '  [x] Just the push event.\n' \
+                  '\n' \
+                  'BitBucket:\n' \
+                  '- URL: ' + URL + '\n' \
+                  '- Triggers (Choose from a full list of triggers):\n' \
+                  '  [x] Repository - Push\n' \
+                  '  [x] Pull Request - Merged\n' \
                   '\n' \
                   'Web Application logs:'
 
