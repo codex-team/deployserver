@@ -183,7 +183,8 @@ def init(settings):
 
             print('Got a {} event in {} branch.'.format(event, branch))
 
-            if params['branch'].split('/')[-1] == branch:
+            # params branch name without "refs/heads/"
+            if params['branch'][11:] == branch:
                 can_deploy = True
 
         elif event == 'pullrequest:fulfilled':
@@ -192,7 +193,8 @@ def init(settings):
 
             print('Got a {} event into {} branch.'.format(event, branch))
 
-            if params['branch'].split('/')[-1] == branch:
+            # params branch name without "refs/heads/"
+            if params['branch'][11:] == branch:
                 can_deploy = True
 
         if can_deploy:
