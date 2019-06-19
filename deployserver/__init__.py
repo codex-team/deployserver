@@ -24,6 +24,8 @@ import asyncio
 import os
 import hashlib
 import hmac
+import re
+import subprocess
 
 from aiohttp import web
 
@@ -72,8 +74,14 @@ def init(settings):
         'deploy': settings.get('deploy', ''),
         'uri': settings.get('uri', '/callback'),
         'branch': 'refs/heads/' + settings.get('branch', 'master'),
+        'branches': settings.get('branches', []),
         'secret_token': settings.get('secret_token', None)
     }
+
+    # check all regexps in branches
+    for val in params['branches']:
+        if val.get('regexp', False):
+            val['regexp'] = re.compile(val.get('regexp'))
 
     def show_welcome_message():
         """
@@ -150,10 +158,16 @@ def init(settings):
                 print('Run deploy script...')
                 os.system(params['deploy'])
 
+            # current branch name without "refs/heads/"
+            current_branch = ref[11:]
+
+            _check_params_branches(current_branch)
+
     async def process_bb_request(request):
         data = await request.json()
         headers = request.headers
         event = headers.get('X-Event-Key', '')
+        branch = ''
 
         can_deploy = False
 
@@ -185,6 +199,7 @@ def init(settings):
             print('Run deploy script...')
             os.system(params['deploy'])
 
+            _check_params_branches(branch)
 
     async def callback(request):
         """
@@ -203,6 +218,31 @@ def init(settings):
             print("[callback] Message process error: [%s]" % e)
 
         return web.Response(text='OK')
+
+    def _check_params_branches(current_branch):
+        """
+        Compare current branch name with name or regexp
+        in params['branches'] and run needed deploy script
+        """
+        for item in params['branches']:
+            branch_name = item.get('name', None)
+            regexp = item.get('regexp', None)
+
+            can_deploy = False
+
+            if branch_name and branch_name == current_branch:
+                can_deploy = True
+            elif regexp and re.match(regexp, current_branch):
+                can_deploy = True
+
+            if can_deploy:
+                script = item.get('script', None)
+                is_branch_name_to_cli = item.get('is_branch_name_to_cli', None)
+
+                print('Run deploy script [' + script + '] for branch [' + current_branch + ']...')
+
+                cmd = script + ' ' + current_branch if is_branch_name_to_cli else script
+                subprocess.Popen([cmd], shell=True)
 
     show_welcome_message()
     run()
