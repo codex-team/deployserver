@@ -26,6 +26,34 @@ To start your first autodeploy daemon you need to create `deploy.py` script file
                   'git pull;'
     })
 
+To start autodeploy with multiple branches
+
+.. code:: python
+
+    import deployserver
+
+
+    deployserver.init({
+        'server_address': 'http://mydomain.com',
+        'port': 1234,
+        'branches': [
+            {
+                'name': 'master',
+                'script': '/var/www/myProject/master-deploy.sh'
+            },
+            {
+                'name': 'deploy/test',
+                'script': '/var/www/myProject/test-deploy.sh',
+                'is_branch_name_to_cli': False
+            },
+            {
+                'regexp': r'feature/.*',
+                'script': '/var/www/myProject/feature-deploy.sh',
+                'is_branch_name_to_cli': True
+            }
+        ]
+    })
+
 Then you need to run this script.
 
 .. code:: bash
