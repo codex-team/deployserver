@@ -249,7 +249,7 @@ def init(settings):
             if can_deploy:
                 script = item.get('script', None)
 
-                print('Run deploy script [' + script + '] for branch [' + current_branch + ']...')
+                print('Run deploy script [{}] for branch [{}]...', script, current_branch)
 
                 os.system(script)
 
