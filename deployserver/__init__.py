@@ -56,6 +56,20 @@ def init(settings):
         example: 'current-sprint'
                  'ver2'
 
+    params['branches'] : list of dict
+        (optional) List of branches which push event should initiate deploy
+        default: []
+        example: [
+                    {
+                        'name': 'master',
+                        'script': '/var/www/myProject/deploy.sh'
+                    },
+                    {
+                        'regexp': 'testing/*',
+                        'script': '/var/www/myProject/deploy.sh'
+                    }
+                ]
+
     params['uri'] : string
         (optional) Callback uri.
         default: '/callback'
