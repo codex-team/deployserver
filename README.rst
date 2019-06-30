@@ -44,12 +44,10 @@ To start autodeploy with multiple branches
             {
                 'name': 'deploy/test',
                 'script': '/var/www/myProject/test-deploy.sh',
-                'is_branch_name_to_cli': False
             },
             {
                 'regexp': r'feature/.*',
-                'script': '/var/www/myProject/feature-deploy.sh',
-                'is_branch_name_to_cli': True
+                'script': '/var/www/myProject/feature-deploy.sh'
             }
         ]
     })

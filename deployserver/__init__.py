@@ -25,7 +25,6 @@ import os
 import hashlib
 import hmac
 import re
-import subprocess
 
 from aiohttp import web
 
@@ -81,7 +80,11 @@ def init(settings):
     # check all regexps in branches
     for val in params['branches']:
         if val.get('regexp', False):
-            val['regexp'] = re.compile(val.get('regexp'))
+            try:
+                val['regexp'] = re.compile(val.get('regexp'))
+            except:
+                print('Can not compile regexp' + val['regexp'] + ' in branches config')
+                exit()
 
     def show_welcome_message():
         """
@@ -156,12 +159,14 @@ def init(settings):
 
             if params['branch'] == ref:
                 print('Run deploy script...')
-                os.system(params['deploy'])
+                if params.get('deploy', False):
+                    os.system(params['deploy'])
+                    return
 
             # current branch name without "refs/heads/"
             current_branch = ref[11:]
 
-            _check_params_branches(current_branch)
+            _check_and_deploy_branches(current_branch)
 
     async def process_bb_request(request):
         data = await request.json()
@@ -197,11 +202,15 @@ def init(settings):
             if params['branch'][11:] == branch:
                 can_deploy = True
 
+        # if can deploy single branch config do it and exit
         if can_deploy:
-            print('Run deploy script...')
-            os.system(params['deploy'])
+            if params.get('deploy', False):
+                print('Run deploy script...')
+                os.system(params['deploy'])
+                return
 
-            _check_params_branches(branch)
+        # else check and deploy multiple branch config
+        _check_and_deploy_branches(branch)
 
     async def callback(request):
         """
@@ -221,7 +230,7 @@ def init(settings):
 
         return web.Response(text='OK')
 
-    def _check_params_branches(current_branch):
+    def _check_and_deploy_branches(current_branch):
         """
         Compare current branch name with name or regexp
         in params['branches'] and run needed deploy script
@@ -239,12 +248,10 @@ def init(settings):
 
             if can_deploy:
                 script = item.get('script', None)
-                is_branch_name_to_cli = item.get('is_branch_name_to_cli', None)
 
                 print('Run deploy script [' + script + '] for branch [' + current_branch + ']...')
 
-                cmd = script + ' ' + current_branch if is_branch_name_to_cli else script
-                subprocess.Popen([cmd], shell=True)
+                os.system(script)
 
     show_welcome_message()
     run()
