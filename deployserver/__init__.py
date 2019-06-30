@@ -65,7 +65,7 @@ def init(settings):
                         'script': '/var/www/myProject/deploy.sh'
                     },
                     {
-                        'regexp': 'testing/*',
+                        'regexp': r'testing/.*',
                         'script': '/var/www/myProject/deploy.sh'
                     }
                 ]
