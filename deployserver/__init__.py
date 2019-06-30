@@ -185,6 +185,17 @@ def init(settings):
             print('Run deploy script...')
             os.system(params['deploy'])
 
+    async def process_custom_request(request):
+        data = await request.json()
+        branch = data.get("branch", None)
+
+        if params['secret_token']:
+            if data.get('secret_token', None) != params['secret_token']:
+                return False
+
+        if params['branch'][11:] == branch:
+            print('Run deploy script...')
+            os.system(params['deploy'])
 
     async def callback(request):
         """
@@ -197,7 +208,8 @@ def init(settings):
                 await process_bb_request(request)
             elif user_agent.startswith('GitHub-Hookshot'):
                 await process_gh_request(request)
-
+            else:
+                await process_custom_request(request)
 
         except Exception as e:
             print("[callback] Message process error: [%s]" % e)
