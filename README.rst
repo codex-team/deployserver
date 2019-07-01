@@ -67,21 +67,20 @@ If you want to run autodeploy daemon in background, use Screen.
 Screen docs: https://www.gnu.org/software/screen/manual/screen.html
 
 Webhooks
------
+--------
 
 Currently support three types of webhooks:
-- `GitHub`_
-- `BitBucket`_
-- Custom
 
-:: _GitHub: https://developer.github.com/webhooks/
-:: _BitBucket: https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html
+- `GitHub <https://developer.github.com/webhooks/>`_
+- `BitBucket <https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html>`_
+- Custom
 
 Custom Webhooks
 ~~~~~~~~~~~~~~~
 
 Send HTTP POST request to the callback URL with JSON payload.
-.. code:: json
+
+.. code:: text
 
     {
         "branch": "master",
