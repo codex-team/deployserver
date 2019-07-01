@@ -111,6 +111,15 @@ Bash commands sequence which should be initiated on branch update.
 
     'deploy': '/var/www/myProject/deploy.sh'
 
+host : string
+~~~~~~~~~~~~~~
+
+deployserver will listen this local address (default 0.0.0.0).
+
+.. code:: python
+
+    'host': '127.0.0.1'
+
 (optional) branch : string
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
