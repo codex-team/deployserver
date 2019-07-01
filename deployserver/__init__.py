@@ -24,6 +24,7 @@ import asyncio
 import os
 import hashlib
 import hmac
+import re
 
 from aiohttp import web
 
@@ -55,6 +56,20 @@ def init(settings):
         example: 'current-sprint'
                  'ver2'
 
+    params['branches'] : list of dict
+        (optional) List of branches which push event should initiate deploy
+        default: []
+        example: [
+                    {
+                        'name': 'master',
+                        'script': '/var/www/myProject/deploy.sh'
+                    },
+                    {
+                        'regexp': r'testing/.*',
+                        'script': '/var/www/myProject/deploy.sh'
+                    }
+                ]
+
     params['uri'] : string
         (optional) Callback uri.
         default: '/callback'
@@ -72,8 +87,18 @@ def init(settings):
         'deploy': settings.get('deploy', ''),
         'uri': settings.get('uri', '/callback'),
         'branch': 'refs/heads/' + settings.get('branch', 'master'),
+        'branches': settings.get('branches', []),
         'secret_token': settings.get('secret_token', None)
     }
+
+    # check all regexps in branches
+    for val in params['branches']:
+        if val.get('regexp', False):
+            try:
+                val['regexp'] = re.compile(val.get('regexp'))
+            except:
+                print('Can not compile regexp' + val['regexp'] + ' in branches config')
+                exit()
 
     def show_welcome_message():
         """
@@ -148,12 +173,20 @@ def init(settings):
 
             if params['branch'] == ref:
                 print('Run deploy script...')
-                os.system(params['deploy'])
+                if params.get('deploy', False):
+                    os.system(params['deploy'])
+                    return
+
+            # current branch name without "refs/heads/"
+            current_branch = ref[11:]
+
+            _check_and_deploy_branches(current_branch)
 
     async def process_bb_request(request):
         data = await request.json()
         headers = request.headers
         event = headers.get('X-Event-Key', '')
+        branch = ''
 
         can_deploy = False
 
@@ -169,7 +202,8 @@ def init(settings):
 
             print('Got a {} event in {} branch.'.format(event, branch))
 
-            if params['branch'].split('/')[-1] == branch:
+            # params branch name without "refs/heads/"
+            if params['branch'][11:] == branch:
                 can_deploy = True
 
         elif event == 'pullrequest:fulfilled':
@@ -178,12 +212,19 @@ def init(settings):
 
             print('Got a {} event into {} branch.'.format(event, branch))
 
-            if params['branch'].split('/')[-1] == branch:
+            # params branch name without "refs/heads/"
+            if params['branch'][11:] == branch:
                 can_deploy = True
 
+        # if can deploy single branch config do it and exit
         if can_deploy:
-            print('Run deploy script...')
-            os.system(params['deploy'])
+            if params.get('deploy', False):
+                print('Run deploy script...')
+                os.system(params['deploy'])
+                return
+
+        # else check and deploy multiple branch config
+        _check_and_deploy_branches(branch)
 
     async def process_custom_request(request):
         data = await request.json()
@@ -196,6 +237,9 @@ def init(settings):
         if params['branch'][11:] == branch:
             print('Run deploy script...')
             os.system(params['deploy'])
+            return
+
+        _check_and_deploy_branches(branch)
 
     async def callback(request):
         """
@@ -215,6 +259,29 @@ def init(settings):
             print("[callback] Message process error: [%s]" % e)
 
         return web.Response(text='OK')
+
+    def _check_and_deploy_branches(current_branch):
+        """
+        Compare current branch name with name or regexp
+        in params['branches'] and run needed deploy script
+        """
+        for item in params['branches']:
+            branch_name = item.get('name', None)
+            regexp = item.get('regexp', None)
+
+            can_deploy = False
+
+            if branch_name and branch_name == current_branch:
+                can_deploy = True
+            elif regexp and re.match(regexp, current_branch):
+                can_deploy = True
+
+            if can_deploy:
+                script = item.get('script', None)
+
+                print('Run deploy script [{}] for branch [{}]...'.format(script, current_branch))
+
+                os.system(script)
 
     show_welcome_message()
     run()
