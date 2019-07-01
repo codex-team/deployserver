@@ -66,6 +66,28 @@ If you want to run autodeploy daemon in background, use Screen.
 
 Screen docs: https://www.gnu.org/software/screen/manual/screen.html
 
+Webhooks
+-----
+
+Currently support three types of webhooks:
+- `GitHub`_
+- `BitBucket`_
+- Custom
+
+:: _GitHub: https://developer.github.com/webhooks/
+:: _BitBucket: https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html
+
+Custom Webhooks
+~~~~~~~~~~~~~~~
+
+Send HTTP POST request to the callback URL with JSON payload.
+.. code:: json
+
+    {
+        "branch": "master",
+    }
+
+
 Initial params
 --------------
 
@@ -111,7 +133,7 @@ Bash commands sequence which should be initiated on branch update.
 
     'deploy': '/var/www/myProject/deploy.sh'
 
-host : string
+(optional) host : string
 ~~~~~~~~~~~~~~
 
 deployserver will listen this local address (default 0.0.0.0).
