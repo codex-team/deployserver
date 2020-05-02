@@ -111,6 +111,20 @@ Bash commands sequence which should be initiated on branch update.
 
     'deploy': '/var/www/myProject/deploy.sh'
 
+(optional) host : string
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+DeployServer will listen this interface.
+
+.. code:: python
+
+    # default
+    'host': '0.0.0.0'
+
+.. code:: python
+
+    'host': 'localhost'
+
 (optional) branch : string
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

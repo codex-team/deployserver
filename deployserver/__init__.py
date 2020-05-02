@@ -50,6 +50,11 @@ def init(settings):
         example: 'cd /var/www/myProject; git pull;'
                  '/var/www/myProject/deploy.sh'
 
+    params['host'] : string
+        (optional) DeployServer will listen this interface.
+        default: '0.0.0.0'
+        example: 'localhost' or '0.0.0.0'
+
     params['branch'] : string
         (optional) Which branch push event should initiate deploy function.
         default: 'master'
@@ -83,6 +88,7 @@ def init(settings):
 
     params = {
         'server_address': settings.get('server_address'),
+        'host': settings.get('host', '0.0.0.0'),
         'port': settings.get('port'),
         'deploy': settings.get('deploy', ''),
         'uri': settings.get('uri', '/callback'),
@@ -141,7 +147,7 @@ def init(settings):
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
         app.router.add_post(params['uri'], callback)
-        web.run_app(app, port=params['port'])
+        web.run_app(app, host=params['host'], port=params['port'])
 
     async def process_gh_request(request):
         def verify_callback(signature, body):
