@@ -50,6 +50,11 @@ def init(settings):
         example: 'cd /var/www/myProject; git pull;'
                  '/var/www/myProject/deploy.sh'
 
+    params['host'] : string
+        (optional) DeployServer will listen this local host.
+        default: '0.0.0.0'
+        example: 'localhost'
+
     params['branch'] : string
         (optional) Which branch push event should initiate deploy function.
         default: 'master'
@@ -85,6 +90,7 @@ def init(settings):
         'server_address': settings.get('server_address'),
         'port': settings.get('port'),
         'deploy': settings.get('deploy', ''),
+        'host': settings.get('host', '0.0.0.0'),
         'uri': settings.get('uri', '/callback'),
         'branch': 'refs/heads/' + settings.get('branch', 'master'),
         'branches': settings.get('branches', []),
@@ -141,7 +147,7 @@ def init(settings):
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
         app.router.add_post(params['uri'], callback)
-        web.run_app(app, port=params['port'])
+        web.run_app(app, host=params['host'], port=params['port'])
 
     async def process_gh_request(request):
         def verify_callback(signature, body):
@@ -226,6 +232,21 @@ def init(settings):
         # else check and deploy multiple branch config
         _check_and_deploy_branches(branch)
 
+    async def process_custom_request(request):
+        data = await request.json()
+        branch = data.get("branch", None)
+
+        if params['secret_token']:
+            if data.get('secret_token', None) != params['secret_token']:
+                return False
+
+        if params['branch'][11:] == branch:
+            print('Run deploy script...')
+            os.system(params['deploy'])
+            return
+
+        _check_and_deploy_branches(branch)
+
     async def callback(request):
         """
         Web App function for processing callback
@@ -237,7 +258,8 @@ def init(settings):
                 await process_bb_request(request)
             elif user_agent.startswith('GitHub-Hookshot'):
                 await process_gh_request(request)
-
+            else:
+                await process_custom_request(request)
 
         except Exception as e:
             print("[callback] Message process error: [%s]" % e)
