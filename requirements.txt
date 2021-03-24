@@ -1,4 +1,4 @@
-aiohttp==3.7.4
+aiohttp==2.3.10
 async-timeout==2.0.0
 bumpversion==0.5.3
 chardet==3.0.4
