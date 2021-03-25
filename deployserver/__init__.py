@@ -188,6 +188,34 @@ def init(settings):
 
             _check_and_deploy_branches(current_branch)
 
+
+    async def process_gl_request(request):
+        data = await request.json()
+        headers = request.headers
+        event = headers.get("X-Gitlab-Event", "")
+        token = headers.get("X-Gitlab-Token", "")
+
+        # Verify Secret Token if it is set in configuration
+        if params['secret_token'] and params['secret_token'] != token:
+            print('Secret Token verification failed...')
+            return web.Response(status=web.HTTPUnauthorized.status_code)
+
+        if event == "Push Hook":
+            ref = data.get("ref", "")
+
+            print('Got a {} event in {} branch.'.format(event, ref))
+
+            if params['branch'] == ref:
+                print('Run deploy script...')
+                if params.get('deploy', False):
+                    os.system(params['deploy'])
+                    return
+
+            # current branch name without "refs/heads/"
+            current_branch = ref[11:]
+
+            _check_and_deploy_branches(current_branch)
+
     async def process_bb_request(request):
         data = await request.json()
         headers = request.headers
@@ -253,11 +281,14 @@ def init(settings):
         """
         try:
             user_agent = request.headers.get('User-Agent', '')
+            gitlab_event = request.headers.get('X-Gitlab-Event', False)
 
             if user_agent.startswith('Bitbucket-Webhooks'):
                 await process_bb_request(request)
             elif user_agent.startswith('GitHub-Hookshot'):
                 await process_gh_request(request)
+            elif gitlab_event:
+                await process_gl_request(request)
             else:
                 await process_custom_request(request)
 
